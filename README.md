@@ -1,4 +1,6 @@
 # 🌐 Termux & Flask Tabanlı Yerel Yapay Zeka Sistem Mimarisi ve Teknik Analizi
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white) ![Flask](https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white) ![Termux](https://img.shields.io/badge/Termux-000000?style=for-the-badge&logo=termux&logoColor=white) ![AI-Orchestration](https://img.shields.io/badge/AI-Orchestration-FF6B6B?style=for-the-badge)
+
 
 Bu depo, Android (Termux) ortamı üzerinde koşan, Flask tabanlı yerel bir tek sayfa yapay zeka uygulamasının (SPA UI) arkasındaki sistem lojistiğini, dinamik hafıza yönetimini ve kesintisiz bağlantı algoritmasını (Failover) detaylandırmak amacıyla hazırlanmış resmi bir mimari analiz dökümanıdır. 
 
