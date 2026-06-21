@@ -10,26 +10,6 @@ Bu depo, Android (Termux) ortamı üzerinde koşan, Flask tabanlı yerel bir tek
 
 Sistem, kısıtlı kaynaklara sahip bir mobil ortamda (Termux) maksimum kararlılık ve sıfır veri kaybı prensibiyle tasarlanmıştır. Tüm süreçler asenkron ve akışkan (Streaming) bir yapıda yönetilir.
 
-[ Mobil Tarayıcı (SPA UI) ] 
-       │ Max-Width: 480px, Inter/JetBrains Mono
-       │
-       ▼ (POST /chat - Base64 File & Message)
-[ Flask Sunucusu (Termux - Port: 8080) ] ──(threading.Lock)──► [ ~/ai_chat_history.json ]
-       │
-       ├─► [1. Sistem Görevleri & Subprocess] ──► (termux-battery-status & uptime)
-       ├─► [2. Doküman İşleme (pypdf)] ────────► (İlk 10 Sayfa Metin Extraction)
-       │
-       ▼ [3. Akıllı Model Zinciri & Seçim Motoru]
-  (Vision? Llama-4-scout-17b | Seçili Model | Default: Llama-3.3-70b -> Llama-3.1-8b)
-       │
-       ▼ [4. API Failover Döngüsü (rotate_key)]
-  (HTTP 200? / 45s Timeout Kontrolü) ───[Hata Durumu]───► [Groq API Anahtarı Değiştir]
-       │                                                                  │
-       ├───────────────────◄───[Retry SSE Stream]─────────────────────────┘
-       │
-       ▼ (Server-Sent Events - SSE Stream)
-[ Canlı Yanıt Akışı ] ──► [ SPA UI ]
-
 ---
 
 ## 🧠 2. Dinamik Hafıza Özetleme Algoritması (condense_memory)
@@ -42,12 +22,26 @@ Büyük dil modellerinde (LLM) bağlam penceresini (Context Window) verimli kull
 * Bu 10 mesajlık yoğun trafik, arka planda llama-3.1-8b modeli ile tek paragraflık semantik bir özete dönüştürülür.
 * Elde edilen bu özet, chat geçmişine "Onceki ozet: [summary]" formatında kalıcı olarak enjekte edilir ve sıkıştırılan o 10 mesaj hafızadan silinerek bağlam alanı anında rahatlatılır.
 
-# Algoritmanın Mantıksal Yapısı (Pseudo-Code)
+```python
+# Algoritmanın Mantıksal Yapısı (Sözde Kod)
 def condense_memory(chat_history):
+    # Chat geçmişi 20 mesaja ulaştığında bellek sıkıştırmayı tetikle
     if len(chat_history) >= 20:
-        # Sıkıştırılacak mesaj bloğunu seç (Index 1 ile 11 arası)
+        # Özetlenecek mesaj bloğunu seç (Index 1 ile 11 arasındaki 10 mesaj)
         target_messages = chat_history[1:11]
         
+        # Seçilen 10 mesajı Llama-3.1-8b modeline göndererek semantik özet üret
+        summary_paragraph = call_summary_model(target_messages)
+        
+        # Hafızayı yeniden yapılandır
+        condensed_history = [chat_history[0]]  # İlk sistem promptunu koru
+        condensed_history.append({"role": "system", "content": f"Önceki özet: {summary_paragraph}"})
+        condensed_history.extend(chat_history[11:])  # Kalan güncel mesajları ekle
+        
+        return condensed_history
+        
+    return chat_history
+
         # Llama-3.1-8b ile semantik özet üret
         summary_paragraph = call_summary_model(target_messages)
         
